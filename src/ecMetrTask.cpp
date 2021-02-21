@@ -36,7 +36,6 @@ void ecMetrTask(void *pvParam) {
   ec_data_t ec;
   portMUX_TYPE ecMutex = portMUX_INITIALIZER_UNLOCKED;
   while (true) {
-    ets_delay_us(200 * 1000);
     portENTER_CRITICAL(&ecMutex);
     ec = calcLoop(200);
     portEXIT_CRITICAL(&ecMutex);
