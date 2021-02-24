@@ -13,14 +13,14 @@
 #define VV2 3300               // ADC reference voltage
 static const adc_unit_t unit = ADC_UNIT_1;
 static const adc_atten_t atten = ADC_ATTEN_DB_11;
-static const adc_channel_t channel = ADC_CHANNEL_7;
+static const adc_channel_t channel = ADC_CHANNEL_5;
 static const adc_bits_width_t width = ADC_WIDTH_BIT_12;
 esp_adc_cal_characteristics_t chars;
 
 static const uint16_t count = 500;
-static const gpio_num_t adc = GPIO_NUM_35;
-static const gpio_num_t digital1 = GPIO_NUM_16;
-static const gpio_num_t digital2 = GPIO_NUM_17;
+static const gpio_num_t adc = GPIO_NUM_33;
+static const gpio_num_t digital1 = GPIO_NUM_18;
+static const gpio_num_t digital2 = GPIO_NUM_19;
 
 void ecMetrTask(void *pvParam) {
 

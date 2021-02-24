@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <blinkTask.h>
+#include <ds18b20Task.h>
 #include <ecMetrTask.h>
 #include <main.h>
 
@@ -33,6 +34,7 @@ void setup() {
   ESP_LOGI(TAG, "setup");
   xTaskCreate(blinkTask, "blink", 1024, NULL, 1, &blink);
   xTaskCreate(ecMetrTask, "ecMetr", 1024 * 8, NULL, 1, &ecMetr);
+  xTaskCreate(ds18b20Task, "ds18b20", 1024 * 64, NULL, 1, &ds18b20);
 }
 mqttMessage msg;
 QueueHandle_t mqttQueue;
@@ -42,7 +44,7 @@ void loop() {
   vTaskDelay(delay * 1000 / portTICK_PERIOD_MS);
   printf("Loop %ds | HELLO=%s\n", delay, HELLO);
   if (xQueueReceive(mqttQueue, &msg, 100 / portTICK_PERIOD_MS) == pdTRUE) {
-    // mqtt.publishMetric(msg.name, msg.metric);
+    mqtt.publishMetric(msg.name, msg.metric);
     printf("mqtt [%s] push = %s\n", msg.name.c_str(), msg.metric.c_str());
   }
   // vTaskDelay(300 / portTICK_PERIOD_MS);
