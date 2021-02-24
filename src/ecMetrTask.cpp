@@ -9,24 +9,21 @@
 #define ON 1
 #define OFF 0
 
-#define ANALOG_PIN GPIO_NUM_35 // ADC1_CHANNEL_6_GPIO_NUM.
-#define VV2 3300               // ADC reference voltage
-static const adc_unit_t unit = ADC_UNIT_1;
-static const adc_atten_t atten = ADC_ATTEN_DB_11;
-static const adc_channel_t channel = ADC_CHANNEL_5;
-static const adc_bits_width_t width = ADC_WIDTH_BIT_12;
-esp_adc_cal_characteristics_t chars;
+static const uint32_t reference_voltage = 3300;
+static const adc_channel_t channelEc = ADC_CHANNEL_5;
+static const adc_channel_t channelTermistor = ADC_CHANNEL_4;
+esp_adc_cal_characteristics_t charsEc;
+esp_adc_cal_characteristics_t charsTermistor;
 
 static const uint16_t count = 500;
 static const gpio_num_t adc = GPIO_NUM_33;
+static const gpio_num_t termistor = GPIO_NUM_32;
 static const gpio_num_t digital1 = GPIO_NUM_18;
 static const gpio_num_t digital2 = GPIO_NUM_19;
 
 void ecMetrTask(void *pvParam) {
-
-  adc1_config_width(width);
-  adc1_config_channel_atten((adc1_channel_t)channel, atten);
-  esp_adc_cal_characterize(unit, atten, width, VV2, &chars);
+  configureD32forTermistor();
+  configureD33forAnalog();
   gpio_pad_select_gpio(digital1);
   gpio_pad_select_gpio(digital2);
   gpio_set_direction(digital1, GPIO_MODE_OUTPUT);
@@ -43,6 +40,7 @@ void ecMetrTask(void *pvParam) {
     vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
   }
 }
+
 
 ec_data_t calcLoop(uint16_t count) {
   ec_data_t result = {0};
@@ -66,7 +64,7 @@ ec_data_t calcLoop(uint16_t count) {
 
 uint32_t ecAdc() {
   uint32_t volt;
-  esp_adc_cal_get_voltage(channel, &chars, &volt);
+  esp_adc_cal_get_voltage(channelEc, &charsEc, &volt);
   return volt;
 }
 
@@ -98,6 +96,29 @@ float fCalibration(float x1, float ec1, float x2, float ec2, float x) {
  */
 float fECTemp(float k, float ec0, float t) { return ec0 / (1 + k * (t - 25)); }
 
+/**
+ * Coficure D32 Analog Input (Termistor).
+ */
+void configureD32forTermistor() {
+  static const adc_unit_t unit = ADC_UNIT_1;
+  static const adc_atten_t atten = ADC_ATTEN_DB_11;
+  static const adc_bits_width_t width = ADC_WIDTH_BIT_12;
+  adc1_config_width(width);
+  adc1_config_channel_atten((adc1_channel_t)channelTermistor, atten);
+  esp_adc_cal_characterize(unit, atten, width, reference_voltage, &charsTermistor);
+}
+
+/**
+ * Coficure D3e Analog Input (EC).
+ */
+void configureD33forAnalog() {
+  static const adc_unit_t unit = ADC_UNIT_1;
+  static const adc_atten_t atten = ADC_ATTEN_DB_11;
+  static const adc_bits_width_t width = ADC_WIDTH_BIT_12;
+  adc1_config_width(width);
+  adc1_config_channel_atten((adc1_channel_t)channelEc, atten);
+  esp_adc_cal_characterize(unit, atten, width, reference_voltage, &charsEc);
+}
 
 /**
  * typedef enum {

@@ -29,6 +29,7 @@ void mqttSetup() {
 }
 
 TaskHandle_t ecMetr;
+TaskHandle_t ds18b20;
 void setup() {
   mqttSetup();
   ESP_LOGI(TAG, "setup");

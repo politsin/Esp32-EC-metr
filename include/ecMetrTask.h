@@ -18,3 +18,6 @@ void ecSetNegative();
 void ecSetOff();
 uint32_t ecAdc();
 ec_data_t calcLoop(uint16_t count);
+
+void configureD32forTermistor();
+void configureD33forAnalog();

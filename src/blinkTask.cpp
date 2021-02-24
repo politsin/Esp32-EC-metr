@@ -2,7 +2,7 @@
 // #include <blinkTask.h> WTF o.O
 // Blink #19.
 #include "driver/gpio.h"
-#define LED_PIN GPIO_NUM_19
+#define LED_PIN GPIO_NUM_5
 
 void blinkTask(void *pvParam) {
   gpio_pad_select_gpio(LED_PIN);

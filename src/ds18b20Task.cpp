@@ -12,7 +12,7 @@ void ds18b20Task(void *pvParam) {
   sensors.begin();
   while (true) {
     sensors.requestTemperatures();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    vTaskDelay(750 / portTICK_PERIOD_MS);
     float tempEC = sensors.getTempCByIndex(0);
     if (tempEC != DEVICE_DISCONNECTED_C) {
       if (tempEC > -60 && tempEC < 60) {
@@ -28,6 +28,6 @@ void ds18b20Task(void *pvParam) {
     } else {
       printf("Error: Could not read temperature data\n");
     }
-    vTaskDelay(10 * 1000 / portTICK_PERIOD_MS);
+    vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
   }
 }
