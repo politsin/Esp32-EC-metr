@@ -51,5 +51,5 @@ void loop() {
 // Command callback.
 void mqtt_callback(std::string param, std::string value) {
   uint16_t val = atoi(value.c_str());
-  printf("%s=%s\n", param.c_str(), value.c_str());
+  printf("%s=%s [%d]\n", param.c_str(), value.c_str(), val);
 }
