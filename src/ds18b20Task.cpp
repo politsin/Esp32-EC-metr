@@ -1,5 +1,6 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
+#include <ds18b20Task.h>
 #include <freertos/queue.h>
 #include <main.h>
 
@@ -16,15 +17,21 @@ void ds18b20Task(void *pvParam) {
     vTaskDelay(750 / portTICK_PERIOD_MS);
     float tempEC = sensors.getTempCByIndex(0);
     if (tempEC != DEVICE_DISCONNECTED_C) {
-      char data[8];
-      sprintf(data, "%.2f", tempEC);
-      string metric = std::string(data);
-      mqttMessage msg = {"tin", metric};
-      xQueueSend(mqttQueue, &msg, portMAX_DELAY);
-      printf("tempEC = %.2f C\n", tempEC);
-    } else {
-      printf("Error: Could not read temperature data\n");
+      mqttMessage msg = temperatureToMessage(tempEC);
+      printf("tempEC = %s C\n", msg.metric.c_str());
+      // xQueueSend(mqttQueue, &msg, portMAX_DELAY);
+    } 
+    else {
+      ESP_LOGE(TAG, "Could not read temperature data");
     }
     vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
   }
+}
+
+mqttMessage temperatureToMessage(float temperature) {
+  char data[8];
+  sprintf(data, "%.2f", temperature);
+  string metric = std::string(data);
+  mqttMessage msg = {"tempEC", metric};
+  return msg;
 }

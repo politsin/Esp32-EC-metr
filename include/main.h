@@ -9,3 +9,8 @@ typedef struct {
   string name;
   string metric;
 } mqttMessage;
+
+// Log.
+#include "esp_err.h"
+#include "esp_log.h"
+#define TAG "LOG"

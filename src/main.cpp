@@ -4,10 +4,8 @@
 #include <ecMetrTask.h>
 #include <main.h>
 
-// Log
-#include "esp_err.h"
-#include "esp_log.h"
-#define TAG "LOG"
+
+
 
 // EspMqtt32.
 #include "Esp32MQTT.h"
@@ -45,7 +43,7 @@ void loop() {
   vTaskDelay(delay * 1000 / portTICK_PERIOD_MS);
   printf("Loop %ds | HELLO=%s\n", delay, HELLO);
   if (xQueueReceive(mqttQueue, &msg, 100 / portTICK_PERIOD_MS) == pdTRUE) {
-    mqtt.publishMetric(msg.name, msg.metric);
+    // mqtt.publishMetric(msg.name, msg.metric);
     printf("mqtt [%s] push = %s\n", msg.name.c_str(), msg.metric.c_str());
   }
   // vTaskDelay(300 / portTICK_PERIOD_MS);
