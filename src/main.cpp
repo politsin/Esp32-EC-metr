@@ -20,11 +20,16 @@ void setup() {
   xTaskCreate(ds18b20Task, "ds18b20", 1024 * 16, NULL, 1, &ds18b20);
 }
 
+char data[16];
 int16_t count = 0;
+uint16_t loopDelay = 60; // sec.
 void loop() {
-  count++;
-  uint16_t delay = 5; // sec.
-  vTaskDelay(delay * 1000 / portTICK_PERIOD_MS);
-  printf("Loop %ds | %d | HELLO=%s\n", delay, count, HELLO);
+  if ((count++ % 10) == true) {
+    sprintf(data, "%d", count);
+    mqttMessage msg = {"count", std::string(data)};
+    xQueueSend(mqttQueue, &msg, portMAX_DELAY);
+  }
+  vTaskDelay(loopDelay * 1000 / portTICK_PERIOD_MS);
+  printf("Loop %ds | %d | HELLO=%s\n", loopDelay, count, HELLO);
 }
 
