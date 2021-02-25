@@ -1,12 +1,11 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
-#include <ds18b20Task.h>
-#include <freertos/queue.h>
-#include <main.h>
+#include "ds18b20Task.h"
+#include "mqttTask.h"
 
 using std::string;
 
-OneWire oneWire(GPIO_NUM_23);
+OneWire oneWire(GPIO_NUM_12);
 DallasTemperature sensors(&oneWire);
 
 void ds18b20Task(void *pvParam) {
@@ -14,12 +13,12 @@ void ds18b20Task(void *pvParam) {
   sensors.setWaitForConversion(false);
   while (true) {
     sensors.requestTemperatures();
-    vTaskDelay(750 / portTICK_PERIOD_MS);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     float tempEC = sensors.getTempCByIndex(0);
     if (tempEC != DEVICE_DISCONNECTED_C) {
       mqttMessage msg = temperatureToMessage(tempEC);
-      printf("tempEC = %s C\n", msg.metric.c_str());
-      // xQueueSend(mqttQueue, &msg, portMAX_DELAY);
+      // printf("tempEC = %s C\n", msg.metric.c_str());
+      xQueueSend(mqttQueue, &msg, portMAX_DELAY);
     } 
     else {
       ESP_LOGE(TAG, "Could not read temperature data");

@@ -1,5 +1,7 @@
 #pragma once
-#include <Arduino.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/queue.h>
 
 extern TaskHandle_t ecMetr;
 void ecMetrTask(void *pvParam);
@@ -20,4 +22,4 @@ uint32_t ecAdc();
 ec_data_t calcLoop(uint16_t count);
 
 void configureD32forTermistor();
-void configureD33forAnalog();
+void configureD33forEC();

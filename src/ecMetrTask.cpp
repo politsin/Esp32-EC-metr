@@ -1,10 +1,10 @@
-#include "driver/adc.h"
-#include "driver/gpio.h"
-#include "esp_adc_cal.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include <driver/adc.h>
-#include <ecMetrTask.h>
+#include <driver/gpio.h>
+#include <esp_adc_cal.h>
+#include "ecMetrTask.h"
+#include "mqttTask.h"
+
+using std::string;
 
 #define ON 1
 #define OFF 0
@@ -22,8 +22,8 @@ static const gpio_num_t digital1 = GPIO_NUM_18;
 static const gpio_num_t digital2 = GPIO_NUM_19;
 
 void ecMetrTask(void *pvParam) {
-  configureD32forTermistor();
-  configureD33forAnalog();
+  // configureD32forTermistor();
+  configureD33forEC();
   gpio_pad_select_gpio(digital1);
   gpio_pad_select_gpio(digital2);
   gpio_set_direction(digital1, GPIO_MODE_OUTPUT);
@@ -34,9 +34,14 @@ void ecMetrTask(void *pvParam) {
   portMUX_TYPE ecMutex = portMUX_INITIALIZER_UNLOCKED;
   while (true) {
     portENTER_CRITICAL(&ecMutex);
-    ec = calcLoop(200);
+    ec = calcLoop(20);
     portEXIT_CRITICAL(&ecMutex);
     printf("ADC: %.2f mV [%u|%u]\n", ec.result, ec.positive, ec.negative);
+    char data[60];
+    sprintf(data, "%.2f", ec.result);
+    string metric = std::string(data);
+    mqttMessage msg = {"ec", metric};
+    xQueueSend(mqttQueue, &msg, portMAX_DELAY);
     vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
   }
 }
@@ -52,7 +57,7 @@ ec_data_t calcLoop(uint16_t count) {
     ecSetPositive();
     positive += ecAdc();
     ecSetNegative();
-    negative += ecAdc();
+    negative += reference_voltage - ecAdc();
     ecSetOff();
   }
   ecSetOff();
@@ -111,7 +116,7 @@ void configureD32forTermistor() {
 /**
  * Coficure D3e Analog Input (EC).
  */
-void configureD33forAnalog() {
+void configureD33forEC() {
   static const adc_unit_t unit = ADC_UNIT_1;
   static const adc_atten_t atten = ADC_ATTEN_DB_11;
   static const adc_bits_width_t width = ADC_WIDTH_BIT_12;
