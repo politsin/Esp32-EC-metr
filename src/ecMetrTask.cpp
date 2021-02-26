@@ -1,8 +1,8 @@
+#include "ecMetrTask.h"
+#include "mqttTask.h"
 #include <driver/adc.h>
 #include <driver/gpio.h>
 #include <esp_adc_cal.h>
-#include "ecMetrTask.h"
-#include "mqttTask.h"
 
 using std::string;
 
@@ -17,12 +17,12 @@ esp_adc_cal_characteristics_t charsTermistor;
 
 static const uint16_t count = 500;
 static const gpio_num_t adc = GPIO_NUM_33;
-static const gpio_num_t termistor = GPIO_NUM_32;
 static const gpio_num_t digital1 = GPIO_NUM_18;
 static const gpio_num_t digital2 = GPIO_NUM_19;
+static const gpio_num_t termistor = GPIO_NUM_32;
 
 void ecMetrTask(void *pvParam) {
-  // configureD32forTermistor();
+  configureD32forTermistor();
   configureD33forEC();
   gpio_pad_select_gpio(digital1);
   gpio_pad_select_gpio(digital2);
@@ -31,21 +31,26 @@ void ecMetrTask(void *pvParam) {
   ecSetOff();
 
   ec_data_t ec;
+  uint16_t temperature;
   portMUX_TYPE ecMutex = portMUX_INITIALIZER_UNLOCKED;
   while (true) {
     portENTER_CRITICAL(&ecMutex);
     ec = calcLoop(20);
     portEXIT_CRITICAL(&ecMutex);
-    printf("ADC: %.2f mV [%u|%u]\n", ec.result, ec.positive, ec.negative);
+    temperature = temperatureAdc();
+    printf("ADC: %.2f mV, T: %u mV [%u|%u]\n", ec.result, temperature,
+           ec.positive, ec.negative);
     char data[60];
     sprintf(data, "%.2f", ec.result);
     string metric = std::string(data);
     mqttMessage msg = {"ec", metric};
-    xQueueSend(mqttQueue, &msg, portMAX_DELAY);
+    sprintf(data, "%u", temperature);
+    string metricTemperature = std::string(data);
+    mqttMessage msgTemperature = {"ecTemperature", metricTemperature};
+    xQueueSend(mqttQueue, &msgTemperature, portMAX_DELAY);
     vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
   }
 }
-
 
 ec_data_t calcLoop(uint16_t count) {
   ec_data_t result = {0};
@@ -70,6 +75,12 @@ ec_data_t calcLoop(uint16_t count) {
 uint32_t ecAdc() {
   uint32_t volt;
   esp_adc_cal_get_voltage(channelEc, &charsEc, &volt);
+  return volt;
+}
+
+uint32_t temperatureAdc() {
+  uint32_t volt;
+  esp_adc_cal_get_voltage(channelTermistor, &charsTermistor, &volt);
   return volt;
 }
 
@@ -110,7 +121,8 @@ void configureD32forTermistor() {
   static const adc_bits_width_t width = ADC_WIDTH_BIT_12;
   adc1_config_width(width);
   adc1_config_channel_atten((adc1_channel_t)channelTermistor, atten);
-  esp_adc_cal_characterize(unit, atten, width, reference_voltage, &charsTermistor);
+  esp_adc_cal_characterize(unit, atten, width, reference_voltage,
+                           &charsTermistor);
 }
 
 /**

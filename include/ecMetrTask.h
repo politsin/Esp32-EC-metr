@@ -3,6 +3,7 @@
 #include <freertos/task.h>
 #include <freertos/queue.h>
 
+
 extern TaskHandle_t ecMetr;
 void ecMetrTask(void *pvParam);
 
@@ -19,6 +20,7 @@ void ecSetPositive();
 void ecSetNegative();
 void ecSetOff();
 uint32_t ecAdc();
+uint32_t temperatureAdc();
 ec_data_t calcLoop(uint16_t count);
 
 void configureD32forTermistor();
