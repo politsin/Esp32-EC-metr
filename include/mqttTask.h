@@ -12,4 +12,4 @@ extern QueueHandle_t mqttQueue;
 typedef struct {
   string name;
   string metric;
-} mqttMessage;
+} metricMessage;

@@ -43,10 +43,10 @@ void ecMetrTask(void *pvParam) {
     char data[60];
     sprintf(data, "%.2f", ec.result);
     string metric = std::string(data);
-    mqttMessage msg = {"ec", metric};
+    metricMessage msg = {"ec", metric};
     sprintf(data, "%u", temperature);
     string metricTemperature = std::string(data);
-    mqttMessage msgTemperature = {"ecTemperature", metricTemperature};
+    metricMessage msgTemperature = {"ecTemperature", metricTemperature};
     xQueueSend(mqttQueue, &msgTemperature, portMAX_DELAY);
     vTaskDelay(5 * 1000 / portTICK_PERIOD_MS);
   }

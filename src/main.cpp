@@ -13,7 +13,7 @@ TaskHandle_t ds18b20;
 QueueHandle_t mqttQueue;
 void setup() {
   ESP_LOGI(TAG, "setup");
-  mqttQueue = xQueueCreate(10, sizeof(mqttMessage));
+  mqttQueue = xQueueCreate(10, sizeof(metricMessage));
   xTaskCreate(mqttTask, "mqtt", 1024 * 64, NULL, 1, &mqttHahdle);
   xTaskCreate(blinkTask, "blink", 1024 * 16, NULL, 1, &blink);
   xTaskCreate(ecMetrTask, "ecMetr", 1024 * 32, NULL, 1, &ecMetr);
@@ -26,7 +26,7 @@ uint16_t loopDelay = 60; // sec.
 void loop() {
   if ((count++ % 10) == true) {
     sprintf(data, "%d", count);
-    mqttMessage msg = {"count", std::string(data)};
+    metricMessage msg = {"count", std::string(data)};
     xQueueSend(mqttQueue, &msg, portMAX_DELAY);
   }
   vTaskDelay(loopDelay * 1000 / portTICK_PERIOD_MS);

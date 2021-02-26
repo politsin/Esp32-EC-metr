@@ -16,11 +16,12 @@ void ds18b20Task(void *pvParam) {
   uint8_t delay = waitForAddresAndSetDelay(sensors, deviceAddress);
   while (true) {
     sensors.requestTemperatures();
+    printf("delay: %d\n", delay);
     vTaskDelay(delay / portTICK_PERIOD_MS);
     float temperature = sensors.getTempC((uint8_t *)deviceAddress);
     if (temperature != DEVICE_DISCONNECTED_C) {
       string metric = temperatureToSting(temperature);
-      mqttMessage msg = {"temperature", metric};
+      metricMessage msg = {"temperature", metric};
       xQueueSend(mqttQueue, &msg, portMAX_DELAY);
     } 
     else {
