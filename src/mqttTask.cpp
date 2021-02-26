@@ -7,7 +7,7 @@
 using std::string;
 
 EspMQTT mqtt;
-mqttMessage msg;
+metricMessage msg;
 void mqttTask(void *pvParam) {
   uint16_t debugLevel = 0;
   if (debugLevel) {
